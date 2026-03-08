@@ -11,13 +11,19 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Message {
+  'id' : MessageId,
   'content' : string,
   'tempUserId' : TempUserId,
   'timestamp' : bigint,
+  'reply' : [] | [string],
 }
+export type MessageId = bigint;
 export type TempUserId = string;
 export interface _SERVICE {
   'getAllMessages' : ActorMethod<[], Array<Message>>,
+  'getCredentials' : ActorMethod<[], Array<string>>,
+  'replyToMessage' : ActorMethod<[MessageId, string], boolean>,
+  'saveCredential' : ActorMethod<[string, string], undefined>,
   'sendMessage' : ActorMethod<[string, [] | [TempUserId]], TempUserId>,
 }
 export declare const idlService: IDL.ServiceClass;

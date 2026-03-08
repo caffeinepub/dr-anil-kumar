@@ -8,30 +8,42 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const MessageId = IDL.Nat;
 export const TempUserId = IDL.Text;
 export const Message = IDL.Record({
+  'id' : MessageId,
   'content' : IDL.Text,
   'tempUserId' : TempUserId,
   'timestamp' : IDL.Int,
+  'reply' : IDL.Opt(IDL.Text),
 });
 
 export const idlService = IDL.Service({
   'getAllMessages' : IDL.Func([], [IDL.Vec(Message)], ['query']),
+  'getCredentials' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+  'replyToMessage' : IDL.Func([MessageId, IDL.Text], [IDL.Bool], []),
+  'saveCredential' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Opt(TempUserId)], [TempUserId], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const MessageId = IDL.Nat;
   const TempUserId = IDL.Text;
   const Message = IDL.Record({
+    'id' : MessageId,
     'content' : IDL.Text,
     'tempUserId' : TempUserId,
     'timestamp' : IDL.Int,
+    'reply' : IDL.Opt(IDL.Text),
   });
   
   return IDL.Service({
     'getAllMessages' : IDL.Func([], [IDL.Vec(Message)], ['query']),
+    'getCredentials' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'replyToMessage' : IDL.Func([MessageId, IDL.Text], [IDL.Bool], []),
+    'saveCredential' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Opt(TempUserId)], [TempUserId], []),
   });
 };

@@ -1,38 +1,31 @@
-# Dr. Anil Kumar - Personal Index Page
+# Dr. Anil Kumar
 
 ## Current State
-New project. No existing code.
+- Hero section with photo, name, credentials, and "Ask Me Anything" CTA
+- Anonymous messaging: visitors send messages stored with a temp user ID (kept in localStorage)
+- "My Messages" panel: visible only to the sender on their device, showing messages they sent
+- "Connect With Me" card: Instagram-style login form that saves credentials
+- Bio section with static info
+- Backend: `sendMessage`, `getAllMessages`, `saveCredential`, `getCredentials`
 
 ## Requested Changes (Diff)
 
 ### Add
-- Personal index/landing page for Dr. Anil Kumar
-  - Name, credentials (MBBS from CIMS Bilaspur, MD General Medicine from CIMS)
-  - Identity as part-time gamer and tech enthusiast
-  - Hero/profile section
-- Anonymous messaging feature
-  - A prominent "Ask Me Anything" / "Send Anonymous Message" button
-  - A message form (textarea + send button)
-  - Backend stores each message with a temporary/anonymous user ID (auto-generated per session)
-  - No login required for senders
-- Admin view (basic): Dr. Anil Kumar can view messages sent to him
+- `reply` optional field (Text) on the `Message` type in the backend
+- `replyToMessage(messageId, replyText)` backend function to let Dr. Anil post a reply
+- Admin panel (password-protected) where Dr. Anil can view all messages and type a reply for each
+- "My Messages" panel shows the reply from Dr. Anil beneath each message the sender sent
 
 ### Modify
-N/A
+- `getAllMessages` returns messages with the new optional `reply` field
+- "My Messages" panel: each message item shows a reply bubble if a reply exists
 
 ### Remove
-N/A
+- Nothing removed
 
 ## Implementation Plan
-1. Backend (Motoko):
-   - Data model: `AnonymousMessage { id; tempUserId; content; timestamp }`
-   - `sendMessage(content: Text) : async Text` -- creates temp user ID if none, stores message, returns tempUserId
-   - `getMessages() : async [AnonymousMessage]` -- returns all messages (admin use)
-   - Temp user tracking: generate a UUID-like ID per call or allow frontend to pass/store one in localStorage
-
-2. Frontend:
-   - Landing page with profile hero section (name, credentials, gamer/tech bio)
-   - "Ask Me Anything" button that opens a message dialog/modal
-   - Anonymous message form with textarea and submit
-   - Success state after sending
-   - Simple messages inbox view (behind a toggle/button for admin)
+1. Update `Message` type in Motoko to include `reply: ?Text`
+2. Add `replyToMessage(id: MessageId, reply: Text) : async Bool` function
+3. Regenerate backend bindings
+4. Add admin panel UI: password-protected (hardcoded admin password), lists all messages, each has a reply textarea + submit button
+5. Update "My Messages" panel to display reply bubble when `reply` is set

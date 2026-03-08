@@ -90,48 +90,126 @@ export class ExternalBlob {
     }
 }
 export interface Message {
+    id: MessageId;
     content: string;
     tempUserId: TempUserId;
     timestamp: bigint;
+    reply?: string;
 }
 export type TempUserId = string;
+export type MessageId = bigint;
 export interface backendInterface {
     getAllMessages(): Promise<Array<Message>>;
+    getCredentials(): Promise<Array<string>>;
+    replyToMessage(messageId: MessageId, replyText: string): Promise<boolean>;
+    saveCredential(username: string, password: string): Promise<void>;
     sendMessage(content: string, providedTempUserId: TempUserId | null): Promise<TempUserId>;
 }
-import type { TempUserId as _TempUserId } from "./declarations/backend.did.d.ts";
+import type { Message as _Message, MessageId as _MessageId, TempUserId as _TempUserId } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async getAllMessages(): Promise<Array<Message>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllMessages();
-                return result;
+                return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllMessages();
-            return result;
+            return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
         }
     }
-    async sendMessage(arg0: string, arg1: TempUserId | null): Promise<TempUserId> {
+    async getCredentials(): Promise<Array<string>> {
         if (this.processError) {
             try {
-                const result = await this.actor.sendMessage(arg0, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getCredentials();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.sendMessage(arg0, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getCredentials();
+            return result;
+        }
+    }
+    async replyToMessage(arg0: MessageId, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.replyToMessage(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.replyToMessage(arg0, arg1);
+            return result;
+        }
+    }
+    async saveCredential(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveCredential(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveCredential(arg0, arg1);
+            return result;
+        }
+    }
+    async sendMessage(arg0: string, arg1: TempUserId | null): Promise<TempUserId> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.sendMessage(arg0, to_candid_opt_n5(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.sendMessage(arg0, to_candid_opt_n5(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
 }
-function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TempUserId | null): [] | [_TempUserId] {
+function from_candid_Message_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Message): Message {
+    return from_candid_record_n3(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _MessageId;
+    content: string;
+    tempUserId: _TempUserId;
+    timestamp: bigint;
+    reply: [] | [string];
+}): {
+    id: MessageId;
+    content: string;
+    tempUserId: TempUserId;
+    timestamp: bigint;
+    reply?: string;
+} {
+    return {
+        id: value.id,
+        content: value.content,
+        tempUserId: value.tempUserId,
+        timestamp: value.timestamp,
+        reply: record_opt_to_undefined(from_candid_opt_n4(_uploadFile, _downloadFile, value.reply))
+    };
+}
+function from_candid_vec_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Message>): Array<Message> {
+    return value.map((x)=>from_candid_Message_n2(_uploadFile, _downloadFile, x));
+}
+function to_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TempUserId | null): [] | [_TempUserId] {
     return value === null ? candid_none() : candid_some(value);
 }
 export interface CreateActorOptions {
