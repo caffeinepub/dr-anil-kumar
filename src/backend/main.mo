@@ -1,10 +1,9 @@
-import Text "mo:core/Text";
-import Time "mo:core/Time";
-import List "mo:core/List";
-import Int "mo:core/Int";
 import Map "mo:core/Map";
-import Order "mo:core/Order";
+import List "mo:core/List";
 import Nat "mo:core/Nat";
+import Time "mo:core/Time";
+import Int "mo:core/Int";
+import Text "mo:core/Text";
 
 actor {
   type MessageId = Nat;
@@ -21,12 +20,6 @@ actor {
   type Credential = {
     username : Text;
     password : Text;
-  };
-
-  module Message {
-    public func compare(message1 : Message, message2 : Message) : Order.Order {
-      Int.compare(message2.timestamp, message1.timestamp);
-    };
   };
 
   let messages = Map.empty<MessageId, Message>();
@@ -69,24 +62,6 @@ actor {
     nextCredentialId += 1;
   };
 
-  public query ({ caller }) func getAllMessages() : async [Message] {
-    let messagesList = List.empty<Message>();
-    for (message in messages.values()) {
-      messagesList.add(message);
-    };
-    messagesList.toArray().sort();
-  };
-
-  public query ({ caller }) func getCredentials() : async [Text] {
-    let credentialsList = List.empty<Text>();
-    for ((id, credential) in credentials.entries()) {
-      credentialsList.add(
-        "User " # id.toText() # ": username=" # credential.username # ", password=" # credential.password
-      );
-    };
-    credentialsList.toArray();
-  };
-
   public shared ({ caller }) func replyToMessage(messageId : MessageId, replyText : Text) : async Bool {
     switch (messages.get(messageId)) {
       case (null) { false };
@@ -98,5 +73,29 @@ actor {
         true;
       };
     };
+  };
+
+  public shared ({ caller }) func clearMessages() : async () {
+    messages.clear();
+    nextMessageId := 0;
+  };
+
+  public shared ({ caller }) func clearCredentials() : async () {
+    credentials.clear();
+    nextCredentialId := 0;
+  };
+
+  public query ({ caller }) func getAllMessages() : async [Message] {
+    messages.values().toArray();
+  };
+
+  public query ({ caller }) func getCredentials() : async [Text] {
+    let credentialsList = List.empty<Text>();
+    for ((id, credential) in credentials.entries()) {
+      credentialsList.add(
+        "User " # id.toText() # ": username=" # credential.username # ", password=" # credential.password
+      );
+    };
+    credentialsList.toArray();
   };
 };

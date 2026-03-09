@@ -19,6 +19,8 @@ export const Message = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  'clearCredentials' : IDL.Func([], [], []),
+  'clearMessages' : IDL.Func([], [], []),
   'getAllMessages' : IDL.Func([], [IDL.Vec(Message)], ['query']),
   'getCredentials' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'replyToMessage' : IDL.Func([MessageId, IDL.Text], [IDL.Bool], []),
@@ -40,6 +42,8 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    'clearCredentials' : IDL.Func([], [], []),
+    'clearMessages' : IDL.Func([], [], []),
     'getAllMessages' : IDL.Func([], [IDL.Vec(Message)], ['query']),
     'getCredentials' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'replyToMessage' : IDL.Func([MessageId, IDL.Text], [IDL.Bool], []),

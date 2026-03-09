@@ -86,3 +86,33 @@ export function useGetCredentials() {
     enabled: !!actor && !isFetching,
   });
 }
+
+export function useClearMessages() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("No actor available");
+      await actor.clearMessages();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+    },
+  });
+}
+
+export function useClearCredentials() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("No actor available");
+      await actor.clearCredentials();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["credentials"] });
+    },
+  });
+}

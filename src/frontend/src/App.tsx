@@ -32,12 +32,15 @@ import {
   Send,
   Settings,
   Stethoscope,
+  Trash2,
   User,
 } from "lucide-react";
 import { AnimatePresence, type Variants, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Message } from "./backend.d";
 import {
+  useClearCredentials,
+  useClearMessages,
   useGetAllMessages,
   useGetCredentials,
   useReplyToMessage,
@@ -124,7 +127,7 @@ function BioSection() {
     {
       icon: <User className="w-4 h-4 text-primary" />,
       label: "Full Name",
-      value: "Dr. Anil Kumar",
+      value: "Dr. Anil Kumar Sakhwar",
     },
     {
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
@@ -225,8 +228,13 @@ function BioSection() {
 }
 
 // ─── My Messages Panel ───────────────────────────────────────────
-function MyMessagesPanel() {
-  const [expanded, setExpanded] = useState(false);
+function MyMessagesPanel({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const { data: messages, isLoading, refetch } = useGetAllMessages();
 
   const myUserId = getOrNullTempUserId();
@@ -234,34 +242,14 @@ function MyMessagesPanel() {
     (msg: Message) => msg.tempUserId === myUserId,
   );
 
-  function handleToggle() {
-    const next = !expanded;
-    setExpanded(next);
-    if (next) refetch();
-  }
+  // Auto-fetch when opened
+  const prevOpen = useState(false)[0];
+  if (open && !prevOpen) refetch();
 
   return (
     <section className="w-full max-w-2xl mx-auto pb-12 px-4">
-      {/* Toggle button */}
-      <div className="flex justify-center">
-        <button
-          type="button"
-          data-ocid="my_messages.toggle"
-          onClick={handleToggle}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs font-mono transition-colors py-2 px-4 rounded-md hover:bg-secondary/50"
-        >
-          <Lock className="w-3.5 h-3.5 text-primary" />
-          My Messages
-          {expanded ? (
-            <ChevronUp className="w-3 h-3" />
-          ) : (
-            <ChevronDown className="w-3 h-3" />
-          )}
-        </button>
-      </div>
-
       <AnimatePresence>
-        {expanded && (
+        {open && (
           <motion.div
             data-ocid="my_messages.panel"
             initial={{ opacity: 0, height: 0 }}
@@ -277,6 +265,15 @@ function MyMessagesPanel() {
                   <Lock className="w-3.5 h-3.5 text-primary" />
                   My Anonymous Messages
                 </p>
+                <button
+                  type="button"
+                  data-ocid="my_messages.close_button"
+                  onClick={onClose}
+                  className="text-muted-foreground hover:text-foreground transition-colors text-xs font-mono flex items-center gap-1"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                  Close
+                </button>
               </div>
               {/* Privacy notice */}
               <p className="text-xs text-muted-foreground font-mono bg-secondary/40 border border-border/60 rounded-md px-3 py-2 mb-3 flex items-center gap-2">
@@ -482,6 +479,8 @@ function AdminCredentialsTab() {
     refetch,
     isFetching,
   } = useGetCredentials();
+  const { mutateAsync: clearCreds, isPending: isClearingCreds } =
+    useClearCredentials();
   const allCredentials = credentials ?? [];
 
   return (
@@ -492,19 +491,37 @@ function AdminCredentialsTab() {
           {allCredentials.length} connection
           {allCredentials.length !== 1 ? "s" : ""}
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
-        >
-          <RefreshCw
-            className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
+          >
+            <RefreshCw
+              className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-ocid="admin.credentials.delete_button"
+            onClick={() => clearCreds()}
+            disabled={isClearingCreds || allCredentials.length === 0}
+            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-xs gap-1.5"
+          >
+            {isClearingCreds ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Trash2 className="w-3 h-3" />
+            )}
+            Clear Log
+          </Button>
+        </div>
       </div>
 
       <Separator className="bg-border" />
@@ -567,6 +584,8 @@ function AdminPanel({
     refetch,
     isFetching,
   } = useGetAllMessages();
+  const { mutateAsync: clearMsgs, isPending: isClearingMsgs } =
+    useClearMessages();
 
   function handleAdminLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -732,20 +751,38 @@ function AdminPanel({
                         {allMessages.length} message
                         {allMessages.length !== 1 ? "s" : ""}
                       </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        data-ocid="admin.messages.refresh_button"
-                        onClick={() => refetch()}
-                        disabled={isFetching}
-                        className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
-                      >
-                        <RefreshCw
-                          className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
-                        />
-                        Refresh
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          data-ocid="admin.messages.refresh_button"
+                          onClick={() => refetch()}
+                          disabled={isFetching}
+                          className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
+                        >
+                          <RefreshCw
+                            className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
+                          />
+                          Refresh
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          data-ocid="admin.messages.delete_button"
+                          onClick={() => clearMsgs()}
+                          disabled={isClearingMsgs || allMessages.length === 0}
+                          className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-xs gap-1.5"
+                        >
+                          {isClearingMsgs ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3 h-3" />
+                          )}
+                          Clear Log
+                        </Button>
+                      </div>
                     </div>
 
                     <Separator className="bg-border" />
@@ -1037,7 +1074,7 @@ function ConnectDialog({
                   className="text-sm leading-relaxed"
                   style={{ color: "#737373" }}
                 >
-                  You're now connected with Dr. Anil Kumar!
+                  You're now connected with Dr. Anil Kumar Sakhwar!
                 </p>
               </div>
 
@@ -1272,7 +1309,7 @@ function ConnectDialog({
                 </div>
 
                 <p className="text-xs text-center" style={{ color: "#737373" }}>
-                  Connect with Dr. Anil Kumar — Physician · Gamer · Tech
+                  Connect with Dr. Anil Kumar Sakhwar — Physician · Gamer · Tech
                   Enthusiast
                 </p>
               </form>
@@ -1289,12 +1326,22 @@ export default function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
-  const [hasLocalId, setHasLocalId] = useState(
-    () => !!localStorage.getItem(ANON_USER_KEY),
-  );
+  const [myMsgOpen, setMyMsgOpen] = useState(false);
+  const myMessagesSectionRef = useRef<HTMLDivElement>(null);
+
+  function openMyMessages() {
+    setMyMsgOpen(true);
+    // Scroll to the messages section at the bottom after a short delay to let it render
+    setTimeout(() => {
+      myMessagesSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+  }
 
   function handleSent() {
-    setHasLocalId(true);
+    openMyMessages();
   }
 
   return (
@@ -1309,7 +1356,7 @@ export default function App() {
       {/* ── Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
         <span className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
-          Dr. Anil Kumar
+          Dr. Anil Kumar Sakhwar
         </span>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -1334,7 +1381,7 @@ export default function App() {
               <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full border-2 border-primary/40 overflow-hidden bg-secondary shadow-[0_0_40px_oklch(0.72_0.22_200_/_0.25)]">
                 <img
                   src="/assets/uploads/IMG_20260308_234747-1.png"
-                  alt="Dr. Anil Kumar"
+                  alt="Dr. Anil Kumar Sakhwar"
                   className="w-full h-full object-cover object-[center_top]"
                 />
               </div>
@@ -1392,15 +1439,29 @@ export default function App() {
               variants={itemVariants}
               className="flex flex-col items-center gap-3"
             >
-              <Button
-                data-ocid="hero.primary_button"
-                size="lg"
-                onClick={() => setDialogOpen(true)}
-                className="font-display font-semibold text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow glow-cyan transition-all duration-300 hover:scale-105"
-              >
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Ask Me Anything
-              </Button>
+              {/* Ask Me Anything + My Messages side by side */}
+              <div className="flex items-center gap-3 flex-wrap justify-center">
+                <Button
+                  data-ocid="hero.primary_button"
+                  size="lg"
+                  onClick={() => setDialogOpen(true)}
+                  className="font-display font-semibold text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow glow-cyan transition-all duration-300 hover:scale-105"
+                >
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  Ask Me Anything
+                </Button>
+
+                {/* My Messages button — always visible on the right */}
+                <button
+                  type="button"
+                  data-ocid="hero.my_messages_button"
+                  onClick={openMyMessages}
+                  className="flex items-center gap-2 font-mono text-xs px-4 py-3 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-200 hover:scale-105"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  My Messages
+                </button>
+              </div>
 
               {/* Connect With Me button */}
               <button
@@ -1468,7 +1529,7 @@ export default function App() {
               data-ocid="connect_card.button"
               onClick={() => setConnectOpen(true)}
               className="card-glow rounded-xl border border-border bg-card p-6 cursor-pointer transition-all duration-300 hover:shadow-[0_0_32px_oklch(0.65_0.28_330_/_0.35)] hover:border-pink-500/50 hover:scale-[1.02] group text-left w-full"
-              aria-label="Connect with Dr. Anil Kumar"
+              aria-label="Connect with Dr. Anil Kumar Sakhwar"
             >
               {/* Instagram gradient icon bg */}
               <div
@@ -1505,15 +1566,20 @@ export default function App() {
         {/* ── Bio Section ── */}
         <BioSection />
 
-        {/* ── My Messages Panel (only visible to the sender on this device) ── */}
-        {hasLocalId && <MyMessagesPanel />}
+        {/* ── My Messages Panel (controlled from hero button, anchored at bottom) ── */}
+        <div ref={myMessagesSectionRef}>
+          <MyMessagesPanel
+            open={myMsgOpen}
+            onClose={() => setMyMsgOpen(false)}
+          />
+        </div>
       </main>
 
       {/* ── Footer ── */}
       <footer className="relative z-10 border-t border-border py-6 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span className="font-mono">
-            © {new Date().getFullYear()} Dr. Anil Kumar
+            © {new Date().getFullYear()} Dr. Anil Kumar Sakhwar
           </span>
           <div className="flex items-center gap-4">
             {/* Subtle admin access — not publicly visible */}

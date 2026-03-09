@@ -20,6 +20,8 @@ export interface Message {
 export type MessageId = bigint;
 export type TempUserId = string;
 export interface _SERVICE {
+  'clearCredentials' : ActorMethod<[], undefined>,
+  'clearMessages' : ActorMethod<[], undefined>,
   'getAllMessages' : ActorMethod<[], Array<Message>>,
   'getCredentials' : ActorMethod<[], Array<string>>,
   'replyToMessage' : ActorMethod<[MessageId, string], boolean>,

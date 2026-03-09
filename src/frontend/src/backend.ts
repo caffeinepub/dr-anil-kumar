@@ -99,6 +99,8 @@ export interface Message {
 export type TempUserId = string;
 export type MessageId = bigint;
 export interface backendInterface {
+    clearCredentials(): Promise<void>;
+    clearMessages(): Promise<void>;
     getAllMessages(): Promise<Array<Message>>;
     getCredentials(): Promise<Array<string>>;
     replyToMessage(messageId: MessageId, replyText: string): Promise<boolean>;
@@ -108,6 +110,34 @@ export interface backendInterface {
 import type { Message as _Message, MessageId as _MessageId, TempUserId as _TempUserId } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async clearCredentials(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearCredentials();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearCredentials();
+            return result;
+        }
+    }
+    async clearMessages(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearMessages();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearMessages();
+            return result;
+        }
+    }
     async getAllMessages(): Promise<Array<Message>> {
         if (this.processError) {
             try {

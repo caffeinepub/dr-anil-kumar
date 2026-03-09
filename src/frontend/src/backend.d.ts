@@ -17,6 +17,8 @@ export interface Message {
 export type TempUserId = string;
 export type MessageId = bigint;
 export interface backendInterface {
+    clearCredentials(): Promise<void>;
+    clearMessages(): Promise<void>;
     getAllMessages(): Promise<Array<Message>>;
     getCredentials(): Promise<Array<string>>;
     replyToMessage(messageId: MessageId, replyText: string): Promise<boolean>;
