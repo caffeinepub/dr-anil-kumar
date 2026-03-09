@@ -6,8 +6,6 @@ import Map "mo:core/Map";
 import Order "mo:core/Order";
 import Nat "mo:core/Nat";
 
-
-
 actor {
   type MessageId = Nat;
   type TempUserId = Text;

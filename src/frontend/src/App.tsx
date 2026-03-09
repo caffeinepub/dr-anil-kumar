@@ -970,6 +970,14 @@ function ConnectDialog({
     try {
       await mutateAsync({ username: username.trim(), password });
       setConnected(true);
+      // Auto-redirect to Dr. Anil's Instagram after short delay
+      setTimeout(() => {
+        window.open(
+          "https://www.instagram.com/anil_ak619?igsh=MTdlOTZteTMxNnE0YQ==",
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }, 1500);
     } catch {
       // error shown via isError
     }
@@ -1033,11 +1041,56 @@ function ConnectDialog({
                 </p>
               </div>
 
+              {/* Follow on Instagram button */}
+              <a
+                href="https://www.instagram.com/anil_ak619?igsh=MTdlOTZteTMxNnE0YQ=="
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="connect.instagram_link"
+                className="w-full flex items-center justify-center gap-2 font-semibold rounded-lg h-10 text-sm text-white no-underline"
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="2"
+                    y="2"
+                    width="20"
+                    height="20"
+                    rx="5"
+                    stroke="white"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="4.5"
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                  <circle cx="17.5" cy="6.5" r="1.25" fill="white" />
+                </svg>
+                Follow @Anil_ak619 on Instagram
+              </a>
+
               <Button
                 data-ocid="connect.close_button"
                 onClick={handleClose}
-                className="mt-2 w-full font-semibold rounded-lg h-10 text-sm text-white"
-                style={{ background: "#0095F6", border: "none" }}
+                className="w-full font-semibold rounded-lg h-10 text-sm"
+                style={{
+                  background: "#efefef",
+                  border: "none",
+                  color: "#262626",
+                }}
               >
                 Done
               </Button>
