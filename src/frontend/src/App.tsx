@@ -354,7 +354,7 @@ function MyMessagesPanel() {
 }
 
 // ─── Admin Login + Panel Dialog ─────────────────────────────────
-const ADMIN_PASSWORD = "dranilkumar2024";
+const ADMIN_PASSWORD = "Anil@Anil@23@619";
 
 function AdminMessageRow({
   msg,
