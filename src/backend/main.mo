@@ -5,9 +5,9 @@ import Int "mo:core/Int";
 import Map "mo:core/Map";
 import Order "mo:core/Order";
 import Nat "mo:core/Nat";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   type MessageId = Nat;
   type TempUserId = Text;

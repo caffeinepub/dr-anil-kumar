@@ -74,3 +74,15 @@ export function useReplyToMessage() {
     },
   });
 }
+
+export function useGetCredentials() {
+  const { actor, isFetching } = useActor();
+  return useQuery<string[]>({
+    queryKey: ["credentials"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getCredentials();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}

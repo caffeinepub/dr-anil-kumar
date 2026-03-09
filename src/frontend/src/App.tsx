@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   BookOpen,
@@ -18,7 +19,6 @@ import {
   ChevronDown,
   ChevronUp,
   Cpu,
-  ExternalLink,
   Gamepad2,
   GraduationCap,
   Heart,
@@ -39,6 +39,7 @@ import { useState } from "react";
 import type { Message } from "./backend.d";
 import {
   useGetAllMessages,
+  useGetCredentials,
   useReplyToMessage,
   useSaveCredential,
   useSendMessage,
@@ -353,7 +354,7 @@ function MyMessagesPanel() {
 }
 
 // ─── Admin Login + Panel Dialog ─────────────────────────────────
-const ADMIN_PASSWORD = "dranilkumar2024";
+const ADMIN_PASSWORD = "Anil@Anil@23@619";
 
 function AdminMessageRow({
   msg,
@@ -468,6 +469,83 @@ function AdminMessageRow({
             </Button>
           </div>
         </form>
+      )}
+    </div>
+  );
+}
+
+// ─── Admin Credentials Tab ───────────────────────────────────────
+function AdminCredentialsTab() {
+  const {
+    data: credentials,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetCredentials();
+  const allCredentials = credentials ?? [];
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground font-mono">
+          {allCredentials.length} connection
+          {allCredentials.length !== 1 ? "s" : ""}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
+        >
+          <RefreshCw
+            className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
+      </div>
+
+      <Separator className="bg-border" />
+
+      {isLoading ? (
+        <div
+          data-ocid="admin.credentials.loading_state"
+          className="flex items-center gap-2 text-muted-foreground text-sm py-6 justify-center"
+        >
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Loading credentials…
+        </div>
+      ) : allCredentials.length === 0 ? (
+        <div
+          data-ocid="admin.credentials.empty_state"
+          className="flex flex-col items-center gap-2 py-10 text-center"
+        >
+          <Link2 className="w-10 h-10 text-muted-foreground/30" />
+          <p className="text-muted-foreground text-sm font-mono">
+            No connections yet.
+          </p>
+        </div>
+      ) : (
+        <ScrollArea className="h-[46vh] pr-2">
+          <div
+            data-ocid="admin.credentials.list"
+            className="flex flex-col gap-2 pb-2"
+          >
+            {allCredentials.map((cred: string, i: number) => (
+              <div
+                key={cred}
+                data-ocid={`admin.credentials.item.${i + 1}`}
+                className="rounded-lg border border-border bg-background/40 px-4 py-3"
+              >
+                <code className="font-mono text-xs text-foreground/90 leading-relaxed break-all">
+                  {cred}
+                </code>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       )}
     </div>
   );
@@ -600,7 +678,7 @@ function AdminPanel({
               </div>
             </motion.form>
           ) : (
-            /* ── Messages Panel ── */
+            /* ── Authenticated Panel with Tabs ── */
             <motion.div
               key="admin-panel"
               data-ocid="admin.messages.panel"
@@ -610,22 +688,8 @@ function AdminPanel({
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-4"
             >
-              {/* Toolbar */}
-              <div className="flex items-center justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-ocid="admin.messages.refresh_button"
-                  onClick={() => refetch()}
-                  disabled={isFetching}
-                  className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
-                >
-                  <RefreshCw
-                    className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
-                  />
-                  Refresh
-                </Button>
+              {/* Top toolbar */}
+              <div className="flex items-center justify-end">
                 <Button
                   type="button"
                   variant="ghost"
@@ -639,43 +703,95 @@ function AdminPanel({
                 </Button>
               </div>
 
-              <Separator className="bg-border" />
-
-              {/* Message list */}
-              {isLoading ? (
-                <div
-                  data-ocid="admin.messages.loading_state"
-                  className="flex items-center gap-2 text-muted-foreground text-sm py-6 justify-center"
-                >
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading messages…
-                </div>
-              ) : allMessages.length === 0 ? (
-                <div
-                  data-ocid="admin.messages.empty_state"
-                  className="flex flex-col items-center gap-2 py-10 text-center"
-                >
-                  <MessageSquare className="w-10 h-10 text-muted-foreground/30" />
-                  <p className="text-muted-foreground text-sm font-mono">
-                    No messages yet.
-                  </p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[50vh] pr-2">
-                  <div
-                    data-ocid="admin.messages.list"
-                    className="flex flex-col gap-3 pb-2"
+              {/* Tabs */}
+              <Tabs defaultValue="messages">
+                <TabsList className="w-full bg-secondary/50 border border-border">
+                  <TabsTrigger
+                    value="messages"
+                    data-ocid="admin.messages.tab"
+                    className="flex-1 font-mono text-xs data-[state=active]:bg-card data-[state=active]:text-foreground"
                   >
-                    {allMessages.map((msg: Message, i: number) => (
-                      <AdminMessageRow
-                        key={String(msg.id)}
-                        msg={msg}
-                        index={i + 1}
-                      />
-                    ))}
+                    <MessageSquare className="w-3 h-3 mr-1.5" />
+                    Messages
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="credentials"
+                    data-ocid="admin.credentials.tab"
+                    className="flex-1 font-mono text-xs data-[state=active]:bg-card data-[state=active]:text-foreground"
+                  >
+                    <Link2 className="w-3 h-3 mr-1.5" />
+                    Connections
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Messages Tab */}
+                <TabsContent value="messages" className="mt-4">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {allMessages.length} message
+                        {allMessages.length !== 1 ? "s" : ""}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        data-ocid="admin.messages.refresh_button"
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        className="border-border text-muted-foreground hover:text-foreground font-mono text-xs gap-1.5"
+                      >
+                        <RefreshCw
+                          className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`}
+                        />
+                        Refresh
+                      </Button>
+                    </div>
+
+                    <Separator className="bg-border" />
+
+                    {isLoading ? (
+                      <div
+                        data-ocid="admin.messages.loading_state"
+                        className="flex items-center gap-2 text-muted-foreground text-sm py-6 justify-center"
+                      >
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading messages…
+                      </div>
+                    ) : allMessages.length === 0 ? (
+                      <div
+                        data-ocid="admin.messages.empty_state"
+                        className="flex flex-col items-center gap-2 py-10 text-center"
+                      >
+                        <MessageSquare className="w-10 h-10 text-muted-foreground/30" />
+                        <p className="text-muted-foreground text-sm font-mono">
+                          No messages yet.
+                        </p>
+                      </div>
+                    ) : (
+                      <ScrollArea className="h-[44vh] pr-2">
+                        <div
+                          data-ocid="admin.messages.list"
+                          className="flex flex-col gap-3 pb-2"
+                        >
+                          {allMessages.map((msg: Message, i: number) => (
+                            <AdminMessageRow
+                              key={String(msg.id)}
+                              msg={msg}
+                              index={i + 1}
+                            />
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    )}
                   </div>
-                </ScrollArea>
-              )}
+                </TabsContent>
+
+                {/* Credentials Tab */}
+                <TabsContent value="credentials" className="mt-4">
+                  <AdminCredentialsTab />
+                </TabsContent>
+              </Tabs>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1164,7 +1280,7 @@ export default function App() {
               <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse-ring scale-110" />
               <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full border-2 border-primary/40 overflow-hidden bg-secondary shadow-[0_0_40px_oklch(0.72_0.22_200_/_0.25)]">
                 <img
-                  src="/assets/uploads/IMG_20260308_223715-1.png"
+                  src="/assets/uploads/IMG_20260308_234747-1.png"
                   alt="Dr. Anil Kumar"
                   className="w-full h-full object-cover object-[center_top]"
                 />
@@ -1219,7 +1335,10 @@ export default function App() {
             </motion.div>
 
             {/* CTA */}
-            <motion.div variants={itemVariants}>
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col items-center gap-3"
+            >
               <Button
                 data-ocid="hero.primary_button"
                 size="lg"
@@ -1229,7 +1348,23 @@ export default function App() {
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Ask Me Anything
               </Button>
-              <p className="mt-2 text-xs text-muted-foreground font-mono">
+
+              {/* Connect With Me button */}
+              <button
+                type="button"
+                data-ocid="hero.connect_button"
+                onClick={() => setConnectOpen(true)}
+                className="flex items-center gap-2 font-display font-semibold text-sm px-6 py-2.5 rounded-xl text-white transition-all duration-300 hover:scale-105 hover:opacity-90 shadow-md"
+                style={{
+                  background:
+                    "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+                }}
+              >
+                <Link2 className="w-4 h-4" />
+                Connect With Me
+              </button>
+
+              <p className="text-xs text-muted-foreground font-mono">
                 100% anonymous · no login required
               </p>
             </motion.div>
@@ -1328,15 +1463,6 @@ export default function App() {
             © {new Date().getFullYear()} Dr. Anil Kumar
           </span>
           <div className="flex items-center gap-4">
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:text-foreground transition-colors font-mono"
-            >
-              Built with ♥ using caffeine.ai
-              <ExternalLink className="w-3 h-3" />
-            </a>
             {/* Subtle admin access — not publicly visible */}
             <button
               type="button"
