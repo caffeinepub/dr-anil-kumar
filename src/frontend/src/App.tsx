@@ -1418,7 +1418,7 @@ export default function App() {
               </button>
 
               <p className="text-xs text-muted-foreground font-mono">
-                100% anonymous · no login required
+                100% anonymous
               </p>
             </motion.div>
           </motion.div>
