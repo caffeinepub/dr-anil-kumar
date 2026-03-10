@@ -142,7 +142,7 @@ function BioSection() {
     {
       icon: <Stethoscope className="w-4 h-4 text-primary" />,
       label: "Specialization",
-      value: "General Medicine",
+      value: "MD General Medicine",
     },
     {
       icon: <Heart className="w-4 h-4 text-accent" />,
@@ -1448,7 +1448,7 @@ export default function App() {
                   className="font-display font-semibold text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow glow-cyan transition-all duration-300 hover:scale-105"
                 >
                   <MessageSquare className="w-5 h-5 mr-2" />
-                  Ask Me Anything
+                  Ask me via Message
                 </Button>
 
                 {/* My Messages button — always visible on the right */}

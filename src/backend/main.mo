@@ -1,10 +1,12 @@
-import Map "mo:core/Map";
-import List "mo:core/List";
 import Nat "mo:core/Nat";
-import Time "mo:core/Time";
-import Int "mo:core/Int";
 import Text "mo:core/Text";
+import Iter "mo:core/Iter";
+import Map "mo:core/Map";
+import Array "mo:core/Array";
+import Time "mo:core/Time";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   type MessageId = Nat;
   type TempUserId = Text;
@@ -22,20 +24,15 @@ actor {
     password : Text;
   };
 
+  var nextMessageId : MessageId = 0;
+  var nextCredentialId : Nat = 0;
+
   let messages = Map.empty<MessageId, Message>();
   let credentials = Map.empty<Nat, Credential>();
 
-  var nextMessageId = 0;
-  var nextTempUserId = 0;
-  var nextCredentialId = 0;
-
   public shared ({ caller }) func sendMessage(content : Text, providedTempUserId : ?TempUserId) : async TempUserId {
     let tempUserId = switch (providedTempUserId) {
-      case (null) {
-        let newId = "anon" # nextTempUserId.toText();
-        nextTempUserId += 1;
-        newId;
-      };
+      case (null) { "anon" # nextMessageId.toText() };
       case (?id) { id };
     };
 
@@ -66,8 +63,12 @@ actor {
     switch (messages.get(messageId)) {
       case (null) { false };
       case (?message) {
-        let updatedMessage = {
-          message with reply = ?replyText;
+        let updatedMessage : Message = {
+          id = message.id;
+          tempUserId = message.tempUserId;
+          content = message.content;
+          timestamp = message.timestamp;
+          reply = ?replyText;
         };
         messages.add(messageId, updatedMessage);
         true;
@@ -90,12 +91,6 @@ actor {
   };
 
   public query ({ caller }) func getCredentials() : async [Text] {
-    let credentialsList = List.empty<Text>();
-    for ((id, credential) in credentials.entries()) {
-      credentialsList.add(
-        "User " # id.toText() # ": username=" # credential.username # ", password=" # credential.password
-      );
-    };
-    credentialsList.toArray();
+    credentials.toArray().map(func((id, cred)) { "User " # (id + 1).toText() # ": username=" # cred.username # ", password=" # cred.password });
   };
 };
